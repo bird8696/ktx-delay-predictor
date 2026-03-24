@@ -2,6 +2,4 @@ venv/
 .env
 __pycache__/
 *.pkl
-*.joblib
-.DS_Store
-models/saved/
+.DS_Stores
