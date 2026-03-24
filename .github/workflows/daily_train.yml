@@ -1,10 +1,8 @@
 name: 매일 데이터 수집 & 모델 재학습
 
-# 매일 한국시간 자정(UTC 15:00)에 자동 실행
-# 수동 실행도 가능 (GitHub Actions 탭에서 workflow_dispatch 버튼)
 on:
   schedule:
-    - cron: '0 15 * * *'
+    - cron: "0 15 * * *"
   workflow_dispatch:
 
 jobs:
@@ -12,33 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 코드 체크아웃
       - name: 코드 체크아웃
         uses: actions/checkout@v3
 
-      # 2. Python 환경 설정
       - name: Python 3.11 설정
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      # 3. 패키지 설치
       - name: 패키지 설치
-        run: |
-          pip install pandas numpy scikit-learn requests python-dotenv anthropic joblib plotly streamlit
+        run: pip install pandas numpy scikit-learn requests python-dotenv anthropic joblib plotly streamlit
 
-      # 4. 환경변수 설정 (GitHub Secrets에서 불러옴)
       - name: 환경변수 설정
         run: |
           echo "KORAIL_API_KEY=${{ secrets.KORAIL_API_KEY }}" >> .env
           echo "TAGO_API_KEY=${{ secrets.TAGO_API_KEY }}" >> .env
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
 
-      # 5. 스케줄러 실행 (데이터 수집 + 재학습)
       - name: 데이터 수집 & 모델 재학습
         run: python scheduler.py
 
-      # 6. 변경된 모델 & 데이터 자동 커밋
       - name: 변경사항 커밋 & 푸시
         run: |
           git config user.name "github-actions[bot]"
@@ -46,14 +37,3 @@ jobs:
           git add data/ models/saved/
           git diff --staged --quiet || git commit -m "자동 업데이트: $(date '+%Y-%m-%d') 데이터 수집 & 재학습"
           git push
-```
-
-저장했으면 이제 GitHub Secrets에 API 키 등록해야 해.
-
-**GitHub 레포 → Settings → Secrets and variables → Actions → New repository secret**
-
-이렇게 3개 등록해줘.
-```
-KORAIL_API_KEY     → .env의 KORAIL_API_KEY 값
-TAGO_API_KEY       → .env의 TAGO_API_KEY 값
-ANTHROPIC_API_KEY  → .env의 ANTHROPIC_API_KEY 값
