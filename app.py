@@ -94,7 +94,9 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.caption(f"마지막 갱신: {datetime.now().strftime('%H:%M:%S')}")
+    from datetime import timezone, timedelta
+    KST = timezone(timedelta(hours=9))
+    st.caption(f"마지막 갱신: {datetime.now(KST).strftime('%H:%M:%S')} (KST)")
 
 
 # ── 메인 타이틀 ───────────────────────────────────────────
@@ -325,7 +327,7 @@ with tab4:
 - 정상 운행: {normal}개 ({normal/total*100:.0f}%)
 - 지연 예측: {delay}개 ({delay/total*100:.0f}%)
 - 이상치 탐지: {anomaly}개
-- 데이터 기준 시각: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+- 데이터 기준 시각: {datetime.now(KST).strftime('%Y-%m-%d %H:%M')} (KST)
 """
         # Claude API 호출
         with st.chat_message("assistant"):
