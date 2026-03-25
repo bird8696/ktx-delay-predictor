@@ -53,7 +53,7 @@ def get_train_plan(dep_date: str = None) -> pd.DataFrame:
     url = (
         f"{BASE_URL}/travelerTrainRunPlan2"
         f"?serviceKey={API_KEY}"
-        f"&numOfRows=100"   # 한 번에 최대 100개 조회
+        f"&numOfRows=500"   # 한 번에 최대 500개 조회
         f"&pageNo=1"        # 첫 번째 페이지
         f"&_type=json"      # JSON 형식으로 응답 요청
         f"&runDt={dep_date}"
@@ -76,7 +76,7 @@ def get_train_info(dep_date: str = None) -> pd.DataFrame:
     url = (
         f"{BASE_URL}/travelerTrainRunInfo2"
         f"?serviceKey={API_KEY}"
-        f"&numOfRows=100"
+        f"&numOfRows=500"
         f"&pageNo=1"
         f"&_type=json"
         f"&runDt={dep_date}"
