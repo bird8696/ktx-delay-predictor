@@ -164,14 +164,13 @@ with tab1:
 
     # 표시할 컬럼 한글명 매핑
     col_map = {
-        "trn_no":              "열차번호",
-        "dptre_stn_nm":        "출발역",
-        "arvl_stn_nm":         "도착역",
-        "trn_plan_dptre_dt":   "예정 출발",
-        "trn_plan_arvl_dt":    "예정 도착",
-        "delay_min":           "지연(분)",
-        "예측_지연":            "지연 예측",
-        "이상치":               "이상치"
+        "trn_no":            "열차번호",
+        "dptre_stn_nm":      "출발역",
+        "arvl_stn_nm":       "도착역",
+        "trn_plan_dptre_dt": "예정 출발",
+        "trn_plan_arvl_dt":  "예정 도착",
+        "예측_지연":          "지연 예측",
+        "이상치":             "이상치"
     }
 
     # 실제로 존재하는 컬럼만 필터링해서 표시
@@ -232,18 +231,18 @@ with tab2:
             st.plotly_chart(fig_bar, use_container_width=True)
 
     # 실제 지연 시간 히스토그램
-    if "delay_min" in df.columns:
-        st.subheader("실제 지연 시간 분포")
-        fig_hist = px.histogram(
-            df,
-            x="delay_min",
-            nbins=30,
-            title="지연 시간 분포 (분)",
-            color_discrete_sequence=["#3498db"]
-        )
-        # 기준선 (0분) 표시
-        fig_hist.add_vline(x=0, line_dash="dash", line_color="red", annotation_text="기준선")
-        st.plotly_chart(fig_hist, use_container_width=True)
+    # if "delay_min" in df.columns:
+    #     st.subheader("실제 지연 시간 분포")
+    #     fig_hist = px.histogram(
+    #         df,
+    #         x="delay_min",
+    #         nbins=30,
+    #         title="지연 시간 분포 (분)",
+    #         color_discrete_sequence=["#3498db"]
+    #     )
+    #     # 기준선 (0분) 표시
+    #     fig_hist.add_vline(x=0, line_dash="dash", line_color="red", annotation_text="기준선")
+    #     st.plotly_chart(fig_hist, use_container_width=True)
 
 
 # ── 탭 3: 이상치 탐지 ─────────────────────────────────────
