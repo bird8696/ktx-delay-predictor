@@ -89,10 +89,12 @@ def train_random_forest(X: pd.DataFrame, y: pd.Series) -> RandomForestClassifier
 
     # 모델 정의
     model = RandomForestClassifier(
-        n_estimators=100,       # 결정 트리 100개 앙상블
-        max_depth=10,           # 트리 최대 깊이 제한 (과적합 방지)
+        n_estimators=200,       # 트리 수 증가
+        max_depth=15,           # 깊이 증가
         random_state=42,
-        class_weight="balanced" # 소수 클래스(지연)에 더 높은 가중치 부여
+        class_weight="balanced",
+        min_samples_leaf=2,     # 과적합 방지
+        n_jobs=-1               # 병렬 처리로 속도 향상
     )
 
     # 학습 실행

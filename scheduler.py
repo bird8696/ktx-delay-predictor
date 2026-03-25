@@ -15,31 +15,42 @@ DATA_PATH = "data/train_history.csv"
 # ── 1. 전날 운행 완료 데이터 수집 ─────────────────────────
 def collect_yesterday_data() -> pd.DataFrame:
     """
-    전날 날짜 기준으로 운행 완료 데이터 수집
-    실제 도착 시각(trn_arvl_dt)이 null이 아닌 것만 유효한 데이터
+    최근 7일치 데이터 수집
+    API 호출 7회로 과거 데이터 한번에 수집
     """
-    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
-    print(f"[수집] {yesterday} 데이터 수집 중...")
+    all_dfs = []
 
-    df_plan = get_train_plan(dep_date=yesterday)
-    df_info = get_train_info(dep_date=yesterday)
+    for i in range(1, 8):  # 1일 전 ~ 7일 전
+        date = (datetime.now() - timedelta(days=i)).strftime("%Y%m%d")
+        print(f"[수집] {date} 데이터 수집 중...")
 
-    if df_plan.empty or df_info.empty:
-        print("[수집] 데이터 없음")
+        df_plan = get_train_plan(dep_date=date)
+        df_info = get_train_info(dep_date=date)
+
+        if df_plan.empty or df_info.empty:
+            print(f"[수집] {date} 데이터 없음, 건너뜀")
+            continue
+
+        # 전처리 실행
+        preprocessor = TrainPreprocessor()
+        df = preprocessor.run(df_plan, df_info, fit=True)
+
+        # 실제 도착 시각 있는 것만 유효 데이터
+        if "real_arvl_min" in df.columns:
+            df = df[df["real_arvl_min"].notna()]
+
+        # 수집 날짜 컬럼 추가
+        df["collected_date"] = date
+        all_dfs.append(df)
+        print(f"[수집] {date} → {len(df)}행")
+
+    if not all_dfs:
+        print("[수집] 수집된 데이터 없음")
         return pd.DataFrame()
 
-    # 전처리 실행
-    preprocessor = TrainPreprocessor()
-    df = preprocessor.run(df_plan, df_info, fit=True)
-
-    # 실제 도착 시각 있는 것만 유효 데이터
-    if "real_arvl_min" in df.columns:
-        df = df[df["real_arvl_min"].notna()]
-
-    # 수집 날짜 컬럼 추가
-    df["collected_date"] = yesterday
-    print(f"[수집] {len(df)}행 수집 완료")
-    return df
+    df_combined = pd.concat(all_dfs, ignore_index=True)
+    print(f"[수집] 전체 {len(df_combined)}행 수집 완료")
+    return df_combined
 
 
 # ── 2. 누적 데이터에 추가 저장 ────────────────────────────
