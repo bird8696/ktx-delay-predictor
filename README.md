@@ -81,11 +81,9 @@ ktx-delay-predictor/
 │   └── workflows/
 │       └── daily_train.yml     # 매일 자정 자동 실행
 ├── api/
-│   ├── korail.py               # 코레일 운행정보 API
-│   └── tago.py                 # TAGO 열차정보 API
+│   └── korail.py               # 코레일 운행정보 API
 ├── pipeline/
-│   ├── preprocess.py           # 전처리 파이프라인
-│   └── features.py             # 피처 엔지니어링
+│   └── preprocess.py           # 전처리 파이프라인 (결측값/이상치/피처 엔지니어링)
 ├── models/
 │   ├── train_model.py          # 모델 학습
 │   └── saved/                  # 학습된 모델 저장
@@ -136,8 +134,6 @@ ktx-delay-predictor/
 
 ## 🚀 실행 방법
 
-### 로컬 실행
-
 ```bash
 # 1. 레포 클론
 git clone https://github.com/bird8696/ktx-delay-predictor.git
@@ -153,7 +149,6 @@ pip install -r requirements.txt
 
 # 4. 환경변수 설정 (.env 파일 생성)
 KORAIL_API_KEY=your_korail_api_key
-TAGO_API_KEY=your_tago_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
 
 # 5. 모델 학습
@@ -185,20 +180,9 @@ streamlit run app.py
 
 ---
 
-## 📜 관련 자격증 & 기술
-
-- AWS Certified Cloud Practitioner (CLF-C02)
-- 정보처리기사 필기 합격
-- 리눅스마스터 2급 필기 합격
-
----
-
 ## 👤 개발자
 
 **Kim Taehyun** | IT 융합학부 컴퓨터정보보안 전공
 
 - GitHub: [@bird8696](https://github.com/bird8696)
-
-## 사이트 주소
-
-https://ktx-delay-predictor.streamlit.app/
+- 배포 주소: https://ktx-delay-predictor.streamlit.app
