@@ -17,7 +17,7 @@ from models.train_model import FEATURE_COLS, load_and_predict
 st.set_page_config(
     page_title="KTX 지연 예측 대시보드",
     page_icon="🚄",
-    layout="wide",              # 화면 전체 너비 사용
+    layout="wide",
     initial_sidebar_state="expanded"
 )
 
@@ -47,7 +47,6 @@ def fetch_data():
     저장된 전처리기를 불러와서 학습 때와 동일한 기준으로 변환
     """
     try:
-        # 운행계획 (예정 시각) + 운행정보 (실제 시각) 수집
         df_plan = get_train_plan()
         df_info = get_train_info()
 
@@ -162,7 +161,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["📋 열차 현황", "📊 분석", "🔍 이
 with tab1:
     st.subheader("실시간 열차 현황")
 
-    # 표시할 컬럼 한글명 매핑
+    # 표시할 컬럼 한글명 매핑 (지연(분) 제거)
     col_map = {
         "trn_no":            "열차번호",
         "dptre_stn_nm":      "출발역",
@@ -230,20 +229,6 @@ with tab2:
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
-    # 실제 지연 시간 히스토그램
-    # if "delay_min" in df.columns:
-    #     st.subheader("실제 지연 시간 분포")
-    #     fig_hist = px.histogram(
-    #         df,
-    #         x="delay_min",
-    #         nbins=30,
-    #         title="지연 시간 분포 (분)",
-    #         color_discrete_sequence=["#3498db"]
-    #     )
-    #     # 기준선 (0분) 표시
-    #     fig_hist.add_vline(x=0, line_dash="dash", line_color="red", annotation_text="기준선")
-    #     st.plotly_chart(fig_hist, use_container_width=True)
-
 
 # ── 탭 3: 이상치 탐지 ─────────────────────────────────────
 with tab3:
@@ -263,16 +248,51 @@ with tab3:
         df_anomaly_display.columns = list(exist_cols_a.values())
         st.dataframe(df_anomaly_display, use_container_width=True)
 
-    # 전체 이상치 스코어 분포 시각화
-    # 스코어가 낮을수록 이상치에 가까움
+    # 이상치 스코어 분포 (정상/이상치 색상 구분)
     anomaly_scores = if_model.decision_function(X)
-    fig_score = px.histogram(
-        x=anomaly_scores,
-        nbins=30,
-        title="이상치 스코어 분포 (낮을수록 이상치)",
-        color_discrete_sequence=["#9b59b6"]
+
+    fig_score = go.Figure()
+
+    # 정상 구간 (스코어 >= 0)
+    normal_scores = anomaly_scores[anomaly_scores >= 0]
+    if len(normal_scores) > 0:
+        fig_score.add_trace(go.Histogram(
+            x=normal_scores,
+            name="정상",
+            marker_color="#9b59b6",
+            nbinsx=20,
+            opacity=0.85
+        ))
+
+    # 이상치 구간 (스코어 < 0)
+    anomaly_scores_neg = anomaly_scores[anomaly_scores < 0]
+    if len(anomaly_scores_neg) > 0:
+        fig_score.add_trace(go.Histogram(
+            x=anomaly_scores_neg,
+            name="이상치",
+            marker_color="#e74c3c",
+            nbinsx=20,
+            opacity=0.85
+        ))
+
+    fig_score.update_layout(
+        title="이상치 스코어 분포",
+        xaxis_title="이상치 스코어 (0 미만 = 이상치)",
+        yaxis_title="열차 수",
+        barmode="overlay",
+        legend=dict(orientation="h", y=1.1)
     )
-    fig_score.add_vline(x=0, line_dash="dash", line_color="red", annotation_text="이상치 경계")
+
+    # 경계선 (0 기준)
+    fig_score.add_vline(
+        x=0,
+        line_dash="dash",
+        line_color="red",
+        line_width=2,
+        annotation_text="⬅ 이상치  |  정상 ➡",
+        annotation_position="top"
+    )
+
     st.plotly_chart(fig_score, use_container_width=True)
 
 
@@ -299,14 +319,12 @@ with tab4:
             st.markdown(prompt)
 
         # 현재 데이터 요약을 Claude에게 컨텍스트로 전달
-        # Claude가 실제 데이터 기반으로 답변할 수 있게 함
         context = f"""
 현재 열차 운행 데이터 요약:
 - 전체 열차: {total}개
 - 정상 운행: {normal}개 ({normal/total*100:.0f}%)
 - 지연 예측: {delay}개 ({delay/total*100:.0f}%)
 - 이상치 탐지: {anomaly}개
-- 평균 지연 시간: {df['delay_min'].mean():.1f}분
 - 데이터 기준 시각: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 """
         # Claude API 호출
